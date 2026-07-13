@@ -32,7 +32,13 @@ DB_SRC="${DB_SRC:-https://github.com/lee-soft/ax10-dropbear/releases/download/sr
 curl -fsSL "$DB_SRC" -o db.tar.gz
 tar xzf db.tar.gz
 cd "dropbear-${DB_VER}"
-./configure --host=arm-buildroot-linux-gnueabi CC="${CROSS}gcc" --disable-zlib
+# Disable login-record writes (utmp/wtmp/lastlog) + zlib — as every embedded/OpenWrt
+# dropbear does. On this RO-root router those writes BLOCK auth (a stock build hangs
+# right after key exchange); disabling them matches the vendored binary's behaviour.
+./configure --host=arm-buildroot-linux-gnueabi CC="${CROSS}gcc" \
+  --disable-zlib \
+  --disable-utmp --disable-wtmp --disable-utmpx --disable-wtmpx \
+  --disable-lastlog --disable-loginfunc
 make -j"$(nproc)" PROGRAMS="dropbear dbclient dropbearkey dropbearconvert scp"
 "${CROSS}strip" dropbear 2>/dev/null || true
 cp dropbear "$OUT/dropbear"
