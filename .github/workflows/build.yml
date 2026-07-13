@@ -1,0 +1,36 @@
+name: build-dropbear (via newstack)
+
+# Builds dropbear from source with the shared newstack glibc-2.26 ARMv7 toolchain and
+# uploads it as an artifact. The vendored data/opt/ax10-dropbear/dropbear stays
+# authoritative until a CI build is validated on the router.
+
+on:
+  workflow_dispatch:
+  push:
+    paths: ['build/**', '.github/workflows/build.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: i386 runtime for the newstack toolchain
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libc6:i386 libstdc++6:i386 file bzip2
+
+      - name: Build dropbear (glibc-2.26 ARMv7 via newstack)
+        run: sh build/build.sh
+
+      - name: Show result
+        run: file build/out/dropbear
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dropbear-armv7l
+          path: build/out/dropbear
