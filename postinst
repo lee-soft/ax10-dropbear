@@ -1,0 +1,8 @@
+#!/bin/sh
+# Run by ax10-configure with IPKG_INSTROOT=/tmp. Register dropbear-on-:22 with the
+# init-respawn service manager (ax10-svc). dropbear stays in the foreground (no
+# -F needed on this build; it doesn't fork), so busybox init keeps it alive.
+BIN="${IPKG_INSTROOT}/opt/ax10-dropbear/dropbear"
+chmod +x "$BIN" 2>/dev/null
+/tmp/opt/ax10-svc add dropbear22 /tmp/opt/ax10-dropbear/dropbear -p 22 -R -E
+exit 0

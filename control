@@ -1,0 +1,8 @@
+Package: ax10-dropbear
+Version: 1.1-1
+Architecture: all
+Maintainer: Lee Chantrey <lchantrey@gmail.com>
+Section: net
+Priority: optional
+Depends: ax10-svc
+Description: Dropbear SSH for the TP-Link Archer AX10, listening on port 22. Native prebuilt (uses the router's own libc), separate from the boot dropbear on 2222. Part of the ax10-* package set.

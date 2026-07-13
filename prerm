@@ -1,0 +1,5 @@
+#!/bin/sh
+# Unregister + stop the :22 dropbear (removes its inittab respawn entry, HUPs init,
+# kills the running instance).
+/tmp/opt/ax10-svc del dropbear22
+exit 0
