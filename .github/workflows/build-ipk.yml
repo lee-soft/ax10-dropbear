@@ -1,0 +1,45 @@
+name: build-ipk (from source via newstack)
+
+# Builds dropbear from source with the newstack toolchain, packs the .ipk, and publishes
+# it to this repo's rolling "ipk" release. The binary is NOT committed — it's a build
+# output. The archer-ax10 feed aggregates this .ipk into Packages(.gz).
+
+on:
+  push:
+    paths: ['control', 'postinst', 'prerm', 'build/**', 'pack.sh', '.github/workflows/build-ipk.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  ipk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: i386 runtime for the newstack toolchain
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libc6:i386 libstdc++6:i386 file bzip2
+
+      - name: Build dropbear from source (newstack toolchain)
+        run: sh build/build.sh
+
+      - name: Stage the built binary into the package tree
+        run: |
+          mkdir -p data/opt/ax10-dropbear
+          cp build/out/dropbear data/opt/ax10-dropbear/dropbear
+          chmod +x data/opt/ax10-dropbear/dropbear
+          file data/opt/ax10-dropbear/dropbear
+
+      - name: Pack .ipk
+        run: sh pack.sh
+
+      - name: Publish .ipk to the 'ipk' release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create ipk dist/*.ipk --title "opkg package (.ipk)" --notes "Built from source via the newstack toolchain." \
+            || gh release upload ipk dist/*.ipk --clobber
