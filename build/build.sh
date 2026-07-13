@@ -26,9 +26,11 @@ if [ -z "$CROSS" ]; then
 fi
 echo ">> $(${CROSS}gcc --version | head -1)"
 
-# --- dropbear source ---
-curl -fsSL "https://matt.ucc.asn.au/dropbear/releases/dropbear-${DB_VER}.tar.bz2" -o db.tar.bz2
-tar xf db.tar.bz2
+# --- dropbear source: mirrored to our own Release (configure pre-generated), so the
+#     build never depends on a third-party URL. Upstream: https://matt.ucc.asn.au/dropbear/ ---
+DB_SRC="${DB_SRC:-https://github.com/lee-soft/ax10-dropbear/releases/download/src-2019.78/dropbear-2019.78-src.tar.gz}"
+curl -fsSL "$DB_SRC" -o db.tar.gz
+tar xzf db.tar.gz
 cd "dropbear-${DB_VER}"
 ./configure --host=arm-buildroot-linux-gnueabi CC="${CROSS}gcc" --disable-zlib
 make -j"$(nproc)" PROGRAMS="dropbear dbclient dropbearkey dropbearconvert scp"
