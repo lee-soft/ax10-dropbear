@@ -15,12 +15,15 @@ opkg install ax10-dropbear
 Registers `dropbear -p 22 -R -E` with `ax10-svc` (foreground; init keeps it alive). Log in with
 your web-GUI password — see the [archer-ax10 README](../../../archer-ax10#password).
 
-## Building from source
+## Built from source
 
-dropbear is a **glibc-2.26** binary, so it's built with the shared
-[newstack](../../../newstack) cross toolchain (the same stack that builds the LuCI binaries) —
-CI runs inside the newstack container image. The recipe lives under `build/`. The prebuilt
-binary is vendored here so the package installs without a local build.
+The `data/opt/ax10-dropbear/dropbear` binary is **built from source in CI** with the shared
+[newstack](../../../newstack) glibc-2.26 toolchain: `build/build.sh` pulls the official dropbear
+2019.78 tarball (mirrored to this repo's Releases so no third-party URL is needed) and
+configures it `--disable-zlib --disable-wtmp --disable-lastlog`. This clean upstream build
+deliberately **bypasses the TP-Link MAC-based pre-auth lockout** baked into the router's *stock*
+dropbear — which is why the original was named `dropbear_vanilla`. Validated on the router via a
+real SSH client.
 
 ## License
 
