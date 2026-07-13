@@ -26,19 +26,17 @@ if [ -z "$CROSS" ]; then
 fi
 echo ">> $(${CROSS}gcc --version | head -1)"
 
-# --- dropbear source: mirrored to our own Release (configure pre-generated), so the
-#     build never depends on a third-party URL. Upstream: https://matt.ucc.asn.au/dropbear/ ---
-DB_SRC="${DB_SRC:-https://github.com/lee-soft/ax10-dropbear/releases/download/src-2019.78/dropbear-2019.78-src.tar.gz}"
-curl -fsSL "$DB_SRC" -o db.tar.gz
-tar xzf db.tar.gz
+# --- dropbear source: the OFFICIAL 2019.78 release tarball, mirrored to our own Release
+#     so the build never depends on a third-party URL. Upstream: https://matt.ucc.asn.au/dropbear/ ---
+DB_SRC="${DB_SRC:-https://github.com/lee-soft/ax10-dropbear/releases/download/src-2019.78/dropbear-2019.78.tar.bz2}"
+curl -fsSL "$DB_SRC" -o db.tar.bz2
+tar xjf db.tar.bz2
 cd "dropbear-${DB_VER}"
-# Disable login-record writes (utmp/wtmp/lastlog) + zlib — as every embedded/OpenWrt
-# dropbear does. On this RO-root router those writes BLOCK auth (a stock build hangs
-# right after key exchange); disabling them matches the vendored binary's behaviour.
+# Vanilla recipe: --disable-zlib --disable-wtmp --disable-lastlog. The router's STOCK
+# dropbear carries a TP-Link MAC-based pre-auth lockout mod; this clean upstream build
+# bypasses it entirely (that's why the vendored binary is "dropbear_vanilla").
 ./configure --host=arm-buildroot-linux-gnueabi CC="${CROSS}gcc" \
-  --disable-zlib \
-  --disable-utmp --disable-wtmp --disable-utmpx --disable-wtmpx \
-  --disable-lastlog --disable-loginfunc
+  --disable-zlib --disable-wtmp --disable-lastlog
 make -j"$(nproc)" PROGRAMS="dropbear dbclient dropbearkey dropbearconvert scp"
 "${CROSS}strip" dropbear 2>/dev/null || true
 cp dropbear "$OUT/dropbear"
