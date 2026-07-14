@@ -1,5 +1,7 @@
 # ax10-dropbear
 
+> ⚡ **Just want it working, not the source?** Prebuilt binaries + a one-command install are at **[archer-boot.pages.dev](https://archer-boot.pages.dev)**.
+
 **Dropbear SSH** for the TP-Link Archer AX10, listening on **port 22**, supervised by
 `ax10-svc`. Separate from the lifeline dropbear that `boot.sh` starts on :2222.
 
